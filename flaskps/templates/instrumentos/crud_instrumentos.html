@@ -1,0 +1,202 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-5">
+        <h3 style="margin-bottom: 30px;">Instrumentos &nbsp;
+            <button type="button" class="btn btn-default btn-sm instrumento-crud" data-toggle="modal" data-target="#exampleModal">
+                <span data-feather="plus"></span>
+                Instrumento Nuevo
+            </button>
+    </div>
+</div>
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+<table id="myTable" path="{{path}}" summary="tabla de usuarios, sus datos y opciones" class="table table-striped table-bordered"
+    style="width:100%">
+    <thead>
+        <tr>
+            <th id="numero_inventario">N° de Inventario</th>
+            <th id="nombre">Nombre</th>
+            <th id="tipo_instrumento">Tipo</th>
+            <th id="detalle"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for instrumento in instrumentos %}
+        <tr id="instrumento-{{instrumento.numero_inventario}}" img="{{ url_for('static', filename='uploads/') }}{{instrumento.imagen}} ">
+            <td headers="numero_inventario">{{instrumento.numero_inventario}}</td>
+            <td headers="nombre">{{instrumento.nombre}}</td>
+            <td headers="tipo_instrumento">{{instrumento.tipo_instrumento.nombre}}</td>
+            <td headers="detalle">
+                {% if instrumento.imagen %}
+                <button class="btn btn-default btn-sm detalle-instrumento" title="Ver imagen">
+                    <span data-feather="image"></span>
+                </button>
+                {% endif %}
+                <button class="btn btn-default btn-sm editar-instrumento" title="Editar">
+                    <span data-feather="edit"></span>
+                </button>
+                <button class="btn btn-default btn-sm eliminar-instrumento" title="Eliminar">
+                    <span data-feather="trash"></span>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+{% include "instrumentos/modals_crud_instrumentos.html" %}
+
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+</script>
+
+
+<script>
+    
+    function consultar_numero_inventario(numero_inventario_nuevo,boton_id,id=''){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('numero_inventario_instrumento') }}",
+            data: JSON.stringify({
+                    "numero_inventario": id,
+                    "numero_inventario_nuevo": numero_inventario_nuevo
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                    console.log(response)
+                    if(! response['ok']){
+                        $("#"+boton_id).attr("disabled", true);
+                        $(".mensaje-documento").text('*El Numero de Inventario ingresado ya existe')
+                    }else{
+                        $("#"+boton_id).attr("disabled", false);
+                        $(".mensaje-documento").text('')
+                    }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $(".instrumento-crud").click(function (e) { 
+            e.preventDefault();
+            $(".mensaje-documento").text('')
+            $("#crear_instrumento_conf").attr('disabled',false)
+        });
+
+        $('.instrumento').on('keyup change', function (e) {
+            consultar_numero_inventario(
+                $('input[name="numero_inventario_nuevo"]').val(),
+                "crear_instrumento_conf"
+            )
+        });
+        $('.instrumento_mod').on('keyup change', function (e) {
+            consultar_numero_inventario(
+                $('input[name="numero_inventario_nuevo_mod"]').val(),
+                "modificar_instrumento_conf",
+                $('input[name="numero_inventario_mod"]').val(),
+            )
+        });
+        $('#myTable').DataTable({
+            "pageLength": {{administracion.elementos_por_pagina}},
+            "lengthChange": false,
+            language: {
+                "decimal": "",
+                "emptyTable": "No hay información",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ Entradas",
+                "loadingRecords": "Cargando...",
+                "processing": "Procesando...",
+                "search": "Buscar:",
+                "zeroRecords": "Sin resultados encontrados",
+                "paginate": {
+                    "first": "Primero",
+                    "last": "Ultimo",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                }
+            }
+        });
+    
+    $(document).on('click',".detalle-instrumento",function (e) {
+        e.preventDefault();
+        console.log('hola')
+        $("#imagen_instrumento").attr('src', $(this).parent().parent().attr('img') )
+        $("#detalle_instrumento").modal('show')
+    })
+    
+    $(document).on('click',".editar-instrumento",function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{{ url_for('detalle_instrumento') }}",
+                data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $('input[name="numero_inventario_nuevo_mod"]').val(response['instrumento']['numero_inventario']);
+                    $('input[name="numero_inventario_mod"]').val(response['instrumento']['numero_inventario']);
+                    $('select[name="tipo_instrumento_mod"]').val(response['instrumento']['tipo_instrumento_id']).change();
+                    $('input[name="nombre_mod"]').val(response['instrumento']['nombre']);
+                    if (response['instrumento']['imagen']){
+                        $("#imagen_actual").text('Imagen actual: '+response['instrumento']['imagen'])
+                    }else{
+                        $("#imagen_actual").text('');
+                    }
+                    $("#modificar_instrumento_modal").modal('show');
+                    $("#modificar_instrumento_conf").attr("disabled", false);
+                    $(".mensaje-documento").text('');
+            }
+        });
+    });
+
+   $(document).on('click',".eliminar-instrumento",function(e){
+        e.preventDefault();
+        var tr= $(this).parent().parent()
+        var conf = confirm("¿Seguro que desea eliminar el instrumento con N° '"+$($(tr).children()[0]).text()+"'?")
+        var inventario = $(this).parent().parent().attr('id');
+        if (conf){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('eliminar_instrumento') }}",
+            data: JSON.stringify({
+                    "numero_inventario": inventario
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                if(response.deleted)
+                {
+                    alert("Instrumento '"+ inventario.slice(12)   +"' eliminado correctamente")
+                }
+                location.reload();
+            }
+        });
+    }
+    });
+});
+</script>
+{% endblock %}

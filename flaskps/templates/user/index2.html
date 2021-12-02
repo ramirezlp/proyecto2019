@@ -1,0 +1,180 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-5">
+        <h3 style="margin-bottom: 30px;">Usuarios &nbsp;
+            <a href="{{ url_for('user_new') }}"><button class="btn btn-default btn-sm"><span data-feather="plus"></span>
+                    Usuario Nuevo</button></a>
+            <a href="{{ url_for('user_index') }}"> <button class="btn btn-default btn-sm"><span
+                        data-feather="users"></span> Todos</button></a></h3>
+
+    </div>
+    <div class="col-sm-7">
+        <form class="form-inline" style="margin-top: 3px;" action="{{ url_for('user_search') }}" method="GET">
+            <div id="emailInputField"class="form-group mx-sm-3 mb-2">
+                <h4>Busqueda de usuarios &nbsp; </h4>
+                <input type="text" title="Nombre de usuario"class="form-control" name="search_user" id="username" aria-describedby="emailInputField"
+                    placeholder="Nombre">
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input mb-2" type="radio" name="activo-inactivo" id="gridRadios1" value="1"
+                    checked>
+                <label class="form-check-label mb-2" for="gridRadios1">
+                    Activos
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input mb-2" type="radio" name="activo-inactivo" id="gridRadios2" value="0">
+                <label class="form-check-label mb-2" for="gridRadios2">
+                    Inactivos
+                </label>
+            </div>
+             <div class="form-check form-check-inline">
+                <input class="form-check-input mb-2" type="radio" name="activo-inactivo" id="gridRadios2" value="2">
+                <label class="form-check-label mb-2" for="gridRadios2">
+                    Todos
+                </label>
+            </div>
+
+            <button type="submit" style="margin-right: 5px;" class="btn btn-default btn-sm mb-2 float-right"><span
+                    data-feather="search"></span> Buscar</button>
+
+        </form>
+
+    </div>
+</div>
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<table id="myTable" summary="tabla de usuarios, sus datos y opciones" class="table table-striped table-bordered" style="width:100%">
+    <thead>
+        <tr>
+            <th id="email">Email</th>
+            <th id="nombreDeUsuario">Nombre De Usuario</th>
+            <th id="nombre">Nombre</th>
+            <th id="apellido">Apellido</th>
+            <th id="editar"></th>
+            <th id="activarOdesactivar"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td headers="email">{{user.email}}</td>
+            <td headers="nombreDeUsuario">{{user.username}}</td>
+            <td headers="nombre">{{user.first_name}}</td>
+            <td headers="apellido">{{user.last_name}}</td>
+            <td headers="editar">
+                <form action="{{ url_for('user_edit_form') }}" method="POST">
+                    <input type="hidden" name="id" value="{{user.id}}">
+                    <button type="submit" class="btn btn-default btn-sm">
+                        <span data-feather="edit"></span> Editar
+                    </button>
+                </form>
+            </td>
+            <td headers="activarOdesactivar">
+                {% if user.activo %}
+                <button usr_id="{{user.id}}" state="{{user.activo}}"
+                    class="btn btn-default btn-sm cambiar-estado-usuario"><span data-feather="check"></span>
+                    Desactivar</button>
+                {% else %}
+                <button usr_id="{{user.id}}" state="{{user.activo}}"
+                    class="btn btn-default btn-sm cambiar-estado-usuario"><span data-feather="check"></span>
+                    Activar</button>
+                {% endif %}
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="border-bottom" style="margin-top: 40px; margin-bottom: 20px;"></div>
+
+
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+</script>
+
+<script>
+    $(document).ready(function () {
+                $('#myTable').DataTable({
+                        "pageLength": {{administracion.elementos_por_pagina}},
+                        "lengthChange": false,
+                        "searching": false,
+                        language: {
+                            "decimal": "",
+                            "emptyTable": "No hay información",
+                            "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                            "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                            "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                            "infoPostFix": "",
+                            "thousands": ",",
+                            "lengthMenu": "Mostrar _MENU_ Entradas",
+                            "loadingRecords": "Cargando...",
+                            "processing": "Procesando...",
+                            "search": "Buscar:",
+                            "zeroRecords": "Sin resultados encontrados",
+                            "paginate": {
+                                "first": "Primero",
+                                "last": "Ultimo",
+                                "next": "Siguiente",
+                                "previous": "Anterior"
+                            }
+                        }
+                        });
+                });
+
+
+            $(".cambiar-estado-usuario").click(function (e) {
+                e.preventDefault();
+                var user = $($(this).parent().parent().children()[1]).text();
+                var estado = ($(this).attr('state') == '1') ? 'desactivar' : 'activar'
+                var conf = confirm("¿Seguro que desea " + estado + " el usuario '" + user + "'?");
+                if (conf) {
+                    var element = $(this)
+                    $.ajax({
+                        type: 'POST',
+                        url: "{{ url_for('user_state_toggle') }}",
+                        data: JSON.stringify({
+                            "id": $(this).attr('usr_id')
+                        }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data['activado']){
+                            if (element.attr('state') == '1') {
+                                element.text('')
+                                element.append(
+                                    "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-check'><polyline points='20 6 9 17 4 12'></polyline></svg>"
+                                );
+                                element.append(' Activar')
+                                element.attr('state', '0')
+                            } else {
+                                element.text('')
+                                element.append(
+                                    "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-check'><polyline points='20 6 9 17 4 12'></polyline></svg>"
+                                )
+                                element.append(' Desactivar')
+                                element.attr('state', '1')
+                            }
+                            }else{
+                                alert('No puede desactivar el usuario del cual se encuentra logueado.')
+                            }
+
+                        }
+                    });
+                }
+            });
+</script>
+{% endblock %}

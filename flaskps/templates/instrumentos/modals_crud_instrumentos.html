@@ -1,0 +1,131 @@
+<!--Modal modificar instrumento-->
+<!-- Modal -->
+
+<style>
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
+
+<div class="modal fade" id="modificar_instrumento_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modificar Instrumento</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('modificar_instrumento') }}" enctype="multipart/form-data" method="POST" id="modificar_instrumento">
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="inputEmail4">Numero de Inventario</label>
+                            <input hidden type="text" name="numero_inventario_mod">
+                            <input required type="text"  pattern=".{1,30}" class="form-control instrumento_mod" oninput="this.value = this.value.toUpperCase()"  name="numero_inventario_nuevo_mod" placeholder="Numero de Inventario">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Nombre</label>
+                            <input required type="text" class="form-control" name="nombre_mod" placeholder="Nombre">
+                            
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Tipo de Instrumento</label>
+                            <select required id="inputState" class="form-control" name="tipo_instrumento_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_instrumento in tipo_instrumentos%}
+                                <option value="{{tipo_instrumento.id}}">{{tipo_instrumento.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                        <label for="inputtext4">Imagen del instrumento
+                        <input type="file" name="archivo" title="Ningun archivo seleccionado" accept='image/*' class="btn btn-default btn-sm">
+                        <br>
+                        <span id="imagen_actual"></span></label>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#instrumento_nuevo').trigger('reset');$('.mensaje-documento').text('');" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="modificar_instrumento_conf"  class="btn btn-primary">Modificar</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Modal crear instrumento-->
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Instrumento nuevo</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('crear_instrumento') }}" method="POST" enctype="multipart/form-data" id="instrumento_nuevo">
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="inputEmail4">Numero de Inventario</label>
+                            <input hidden type="text" name="numero_inventario">
+                            <input required type="text " pattern=".{1,30}" oninput="this.value = this.value.toUpperCase()" class="form-control instrumento" name="numero_inventario_nuevo" placeholder="Numero de Inventario">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Nombre</label>
+                            <input required type="text" class="form-control" name="nombre" placeholder="Nombre">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Tipo de Instrumento</label>
+                            <select required id="inputState" class="form-control" name="tipo_instrumento">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_instrumento in tipo_instrumentos%}
+                                <option value="{{tipo_instrumento.id}}">{{tipo_instrumento.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                        <label for="inputtext4">Imagen del instrumento</label>
+                        <input type="file" name="archivo" accept='image/*' class="btn btn-default btn-sm">
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#instrumento_nuevo').trigger('reset');$('.mensaje-documento').text('');$(this).attr('disabled',false)" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="crear_instrumento_conf" class="btn btn-primary">Crear</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Modal - Imagen de un instrumento -->
+<div class="modal fade" id="detalle_instrumento" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Imagen del instrumento</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="body_instrumento" class="modal-body">
+            <img id="imagen_instrumento" src="" alt="Imagen del instrumento" style="height:270px;max-width: 100%;text-align:center">
+        </div>
+      </div>
+    </div>
+  </div>

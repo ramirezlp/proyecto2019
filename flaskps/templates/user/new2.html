@@ -1,0 +1,123 @@
+
+{% extends "home2.html" %}
+{% block content %}
+<html lang="en">
+<head>
+<title>Registrar - Usuario</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.slim.min.js') }}"></script>
+
+
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+ -->
+
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-sm-12">
+            <div class="container">
+            <div class="col-sm-6" style="margin: 50px auto">
+                <form action="{{ url_for('user_create') }}" method="POST">
+                    <h2 class="text-center">Registrar Usuario</h2>  
+                    <br>    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <input id="nombre" name="firstname" type="text" class="form-control" placeholder="Nombre" title="Nombre"required="required">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input id="apellido" name="lastname" type="text" class="form-control" placeholder="Apellido" title="Apellido" required="required">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <input id="password" name="password" type="password" class="form-control" placeholder="Contraseña" title="Contraseña" required="required">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input id="username" name="username" type="text" onkeyup="check_username()" class="form-control" placeholder="Nombre de usuario" title="Nombre de usuario" required="required">
+                        </div>
+                    </div> 
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <input id="email" name="email" type="email" onkeyup="check_email()" class="form-control" placeholder="email" title="Correo electronico" required="required">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <button disabled id="botonReg" type="submit" class="btn btn-primary btn-block">Registrar</button>
+                        </div>
+                    </div>   
+                    <p hidden id="errorEmail">*El email ya esta en uso</p>
+                    <p hidden id="error1">*El nombre de usuario ya esta en uso</p> 
+                        
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function check_email(){
+        $.ajax({
+        type: 'POST',
+        url: "{{ url_for('check_email') }}",
+        data: JSON.stringify({
+                "email": $("#email").val()
+            }),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            if (data.estado == "usado") {
+                $("#botonReg").prop("disabled", true)
+                $("#errorEmail").attr("hidden", false)
+            } else {
+                if ($("#error1").is(":visible")){
+                    $("#errorEmail").attr("hidden", true)
+                } else{
+                    $("#botonReg").prop("disabled", false)
+                    $("#errorEmail").attr("hidden", true)
+                }
+            } 
+        }
+    });
+    }
+
+    function check_username(){
+        $.ajax({
+        type: 'POST',
+        url: "{{ url_for('check_username') }}",
+        data: JSON.stringify({
+                "username": $("#username").val()
+            }),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            if (data.estado == "usado") {
+                $("#botonReg").prop("disabled", true)
+                $("#error1").attr("hidden", false)
+            } else {
+                if ($("#errorEmail").is(":visible")){
+                    $("#error1").attr("hidden", true)
+                } else{
+                    $("#botonReg").prop("disabled", false)
+                    $("#error1").attr("hidden", true)
+                }         
+            } 
+        }
+    });
+    }
+</script>
+
+{% endblock %}

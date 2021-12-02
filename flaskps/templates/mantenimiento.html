@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='error.css') }}" />
+    {% endblock %}
+    <title>Mantenimiento</title>
+  </head>
+  <body>
+    <h1>{{ error_name }}</h1>
+    <h2 class="zoom-area"> {{ error_description }} </h2>
+  </body>
+</html>

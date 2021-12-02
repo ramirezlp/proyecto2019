@@ -1,0 +1,209 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="border-bottom" style="margin-top: 40px; margin-bottom: 20px;"></div>
+<div class="row">
+    <h4>Asignar Estudiantes a taller: {{taller.nombre}}</h4>        
+    <div class="col-sm-12">
+    <hr>
+                <form id="formulario" class="form" style="margin-top: 3px;" action="" method="POST">                                                           
+                   <div class="form-row">
+                    {% if ciclos %}
+                       <div class="form-group col-md-4">
+                            <label><h5>Cliclos lectivos</h5></label>
+                            <select  id="ciclo_lectivo" name="ciclo_lectivo" class="form-control selector_ciclo">
+                                {% for ciclo in ciclos %}
+                                    <option indice="" class="ciclos"value="{{ciclo.id}}">Semestre: {{ciclo.semestre}} - inicio: {{ciclo.fecha_ini.strftime('%d-%m-%Y')}} - fin: {{ciclo.fecha_fin.strftime('%d-%m-%Y')}} </option>
+                                {% endfor %}
+                            </select>
+                        </div>     
+                       <div class="form-group col-md-6">
+                           <label><h5>Estudiantes</h5></label>
+                           <table id="myTable"summary="Estudiantes asignados" class="table table-striped table-bordered" style="width:100%">
+                               <thead>
+                                   <th id="docente">Estudiante</th>
+                                   <th id="asiganar">Esta Asignado</th>
+                               </thead>
+                               <tbody>
+                                {% for estudiante in estudiantes %}
+                                    <tr>
+                                    <td headers="docente">{{estudiante.nombre}}</td>
+                                    <td headers="asignar">                  
+                                        <input id="{{estudiante.id}}" class="docente" type="checkbox">
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                               </tbody>
+                           </table>                           
+                       </div>
+                       {% else %}
+                            
+                        <div class="row">
+                            <div class="col-sm-10">
+                                <p class="font-weight-bold">Este taller no cuenta con ciclos lectivos validos para asignar estudiantes<br>            
+                                Un ciclo se considera valido cuando, no haya terminado y ademas tenga<br> uno o mas docentes como responsable asignado
+                                </p>
+                            </div>
+                            <div class="col-sm-2">
+                                <a class="btn btn-success" href="{{url_for('talleres')}}">Asignar Docentes</a>
+                            </div>
+                        </div>
+                       {% endif %}
+                       {% if ciclos %}
+                       <div class="form-group col-md-2">
+                            <input id="taller_id"type="hidden" name="taller" value="{{taller.id}}">                            
+                            <button type="submit" class="btn btn-primary btn-sm mb-2 ">
+                                <span data-feather="check"></span>Guardar</button>
+                            <a class="btn btn-warning btn-sm mb-2" href="{{url_for('talleres')}}">Cancelar</a>
+                       </div>
+                       {% endif %}                       
+                   </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+</script>
+
+<script>
+    
+    var ciclos_docentes = [];
+    var i = 0
+    $('.ciclos').each(function(){        
+        let a = [parseInt($(this).val())]
+        $(this).attr("indice",i) ;
+        ciclos_docentes [i] = a;
+        i = i + 1;
+    });
+
+    $('.docente').change(function(){
+        var i;
+        //si no esta entre los docentes de ese ciclo ponelo
+        $('.ciclos').each(function(){
+            if($(this).val() == $('#ciclo_lectivo').val()){
+                i = $(this).attr("indice");
+            }    
+        });            
+        if($(this).is(':checked')){            
+            let docentes = [...ciclos_docentes[i]]
+            docentes.splice(0,1)
+            if(docentes.includes(parseInt($(this).attr("id")))){
+                               
+            }else{                
+                ciclos_docentes[i].push(parseInt($(this).attr("id")));
+                
+            }
+        }
+        else{
+            let index = ciclos_docentes[i].indexOf(parseInt($(this).attr("id")));
+            if(index > -1){
+                ciclos_docentes[i].splice(index, 1);
+                
+            }else{
+                
+            }
+        }
+    });
+    function actualizarDocentes(){                
+        var ciclo_actual = $('#ciclo_lectivo').val();//string                                
+        //ciclos docentes [0][0] -> es 17 y es una string        
+        var index
+        ciclos_docentes.forEach(function(item){
+            if(item[0] == ciclo_actual){
+                index = ciclos_docentes.indexOf(item)//index es number
+
+            }
+        });
+        $('.docente').each(function(){
+            let id = $(this).attr("id")                        
+            let docentes = [...ciclos_docentes[index]]
+            docentes.splice(0,1)            
+            document.getElementById(id).checked = docentes.includes(parseInt(id));
+        })
+        console.log(ciclos_docentes)
+    }
+    $(document).ready(function () {        
+        $('#myTable').DataTable({
+                "pageLength": {{administracion.elementos_por_pagina}},
+                "lengthChange": false,
+                "searching": false,
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Ultimo",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
+                }
+                });                                        
+            $('.ciclos').each(function(){                    
+                let index = $(this).attr("indice");
+                let ciclo_actual = $(this).val(); 
+                var ciclos_responsables = {{estudiantes_ciclos|tojson}};
+                var responsables_ciclo_actual = null;                
+                ciclos_responsables = JSON.parse(ciclos_responsables);        
+                ciclos_responsables.forEach(function(item){
+                    if (item[0] == ciclo_actual){
+                        responsables_ciclo_actual = item[1];
+                    }
+                });
+                responsables_ciclo_actual.forEach(function(item){               
+                    ciclos_docentes[index].push(item);
+                });                        
+        });        
+        actualizarDocentes();                
+    });
+    $('.selector_ciclo').change(function(){
+        actualizarDocentes()
+    });
+    
+    $('#formulario').on('submit', function(e){        
+        var docentes = []
+        $('.docente').each(function(index){
+            if($(this).is(':checked')){
+                docentes.push($(this).attr("id"))
+            }
+        });        
+        $.ajax({            
+            data:{
+                ciclos_docentes:JSON.stringify(ciclos_docentes), // se cambia a ciclos_docentes
+                taller:$('#taller_id').val(),
+                ciclo:$('#ciclo_lectivo').val(), // se usa la 1° pos de cada arreglo de ciclos_docentes
+                nombre:$('#nombre').val(),
+                nombre_corto:$('#nombre_corto').val()
+            },            
+            type:'POST',
+            url:"{{url_for('asignar_estudiantes')}}",
+            success: function (data) {
+                window.location.href = "{{ url_for('talleres') }}";
+            }            
+        });
+        e.preventDefault();
+    });  
+</script>
+{% endblock %}

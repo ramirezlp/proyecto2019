@@ -1,0 +1,173 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+   crossorigin=""/>
+ 
+<link rel="stylesheet" href="{{url_for('static',filename='leaflet-routing-machine-3.2.12/dist/leaflet-routing-machine.css')}}" /> 
+    <style>
+
+    #mapid { width: 750px;height: 450px;position: right }
+
+    </style>   
+{{ super() }}
+{% endblock %}
+{% block content %} 
+         <div class="row">
+             <div class="col-sm-2"></div>
+             <div class="col-sm-7">
+                 <div id="mapid">         
+                    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+                       integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+                       crossorigin=""></script>      
+                     <script src="{{url_for('static',filename='leaflet-routing-machine-3.2.12/dist/leaflet-routing-machine.js')}}"></script>
+                 </div>                  
+             </div>                          
+             <div class="col-sm-3">                 
+                 <form action="" id="formulario">
+                     <div class="form-group">
+                         <label class="font-weight-bold">Selecione un nucleo</label>
+                         <select id="nucleoSeleccionado" class="form-control">
+                         </select>
+                     </div>
+                     <div class="form-group">
+                         <label class="font-weight-bold">Definir local</label><br>
+                         <button id="btn1" class="btn btn-primary" onClick="agregarUbicacion()">Definir ubicacion en el mapa</button>
+                         <h3  hidden id="texto">Por favor Selecione la ubicacion en el mapa</h3>
+                     </div>
+                     <div class="form-group">
+                         <label class="font-weight-bold">Borrar local</label><br>
+                         <button id="btn2" class="btn btn-danger" onClick="eliminarUbicacion()">borra ubicacion en el mapa</button>
+                     </div>                                            
+                 </form>
+             </div>                            
+         </div>
+     
+
+{% endblock %}
+{% block jsmas%}
+<script>//34°55'18.0 57°57'17.1 -34.883361, -57.881663
+    var mymap;
+    var nucleosPoss;
+    var agregando = false;
+    var borrando = false;    
+    var control = null;
+
+    $(document).ready(function () { 
+        mymap = L.map('mapid').setView([-34.883361, -57.881663], 15);
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);           
+                                
+
+        nucleosPoss = {{nucleosPoss|tojson}};//nucleos y sus pocisiones
+        nucleosPoss = JSON.parse(nucleosPoss);              
+        //marcar todos los nucleos que ya tienen localizacion
+        plotearNucleos();
+        agregarOpciones('nucleoSeleccionado');          
+        actualizarBotones();
+        $('#nucleoSeleccionado').change(function(){actualizarBotones();})
+        $('#formulario').on('submit', function(e){e.preventDefault()});        
+        control = L.Routing.control({
+          waypoints: []
+        }).addTo(mymap);
+
+        
+        function onMapClick(e) {            
+            if(agregando){
+                let nucleo = null;
+                let id = ($('#nucleoSeleccionado').val());
+                nucleosPoss.forEach(function(item){
+                    if(item.id == id){nucleo = item}
+                });                
+                let marker = L.marker(e.latlng);
+                marker.bindPopup("nombre: " + nucleo.nombre + "<br> direccion: "+ nucleo.direccion + "<br> telefono:" + nucleo.telefono).openPopup();
+                marker.addTo(mymap);                                 
+                persistir(nucleo.id,e.latlng);
+                actualizarBotones();                
+            }
+
+        }
+        mymap.on('click', onMapClick);                        
+        
+    });
+    
+    function plotearNucleos(){
+        nucleosPoss.forEach(function(item){
+          if(item.latitud != null && item.longitud != null)
+          {
+            let marker = L.marker([item.latitud, item.longitud]);
+            marker.bindPopup("nombre: " + item.nombre + "<br> direccion: "+ item.direccion + "<br> telefono:" + item.telefono ).openPopup();
+            marker.addTo(mymap);
+          }           
+        });
+    }
+
+    function agregarOpciones(id){
+        for(i = 0; i< nucleosPoss.length; i++){
+            let option = document.createElement('OPTION');
+            let text = document.createTextNode(nucleosPoss[i].nombre + " " + nucleosPoss[i].direccion);
+            option.appendChild(text);
+            option.value = nucleosPoss[i].id;            
+            document.getElementById(id).appendChild(option);    
+        }
+    }
+
+    function actualizarBotones(){        
+        let id = ($('#nucleoSeleccionado').val());
+        let nucleoSeleccionado = null;
+        nucleosPoss.forEach(function(item){
+            if(item.id == id){nucleoSeleccionado = item}
+        });        
+        if(nucleoSeleccionado.latitud != null && nucleoSeleccionado.longitud != null){
+            $('#btn1')[0].disabled = true;
+            $('#btn2')[0].disabled = false;
+            mymap.setView([nucleoSeleccionado.latitud,nucleoSeleccionado.longitud],15)
+        }
+        else{
+            $('#btn1')[0].disabled = false;
+            $('#btn2')[0].disabled = true;            
+        }       
+    }
+    
+    function agregarUbicacion(){
+        agregando = true;
+        $('#texto')[0].hidden = false
+    }
+    function persistir(id,latlng){
+        $.ajax({            
+            data:{
+                id:id,
+                lat:latlng.lat,
+                lng:latlng.lng
+            },            
+            type:'POST',
+            url:"{{url_for('mapa_setCords')}}",
+            success: function (data) {
+                window.location.href = "{{ url_for('mapa_index') }}";
+                agregando = false;
+            }            
+        });
+    }
+
+    function eliminarUbicacion(){
+        let id = ($('#nucleoSeleccionado').val());
+        $.ajax({
+            data:{
+                id:id
+            },
+            type:'POST',
+            url:"{{url_for('mapa_eliminarCords')}}",
+            success: function (data) {
+                window.location.href = "{{ url_for('mapa_index') }}";                
+            }
+        });
+    }
+    
+
+</script>
+{% endblock %}

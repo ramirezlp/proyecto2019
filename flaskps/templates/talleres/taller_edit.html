@@ -1,0 +1,227 @@
+{% extends "home2.html" %}
+{% block head %}
+
+{{ super() }}
+
+{% endblock %}
+{% block content %}
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="border-bottom" style="margin-top: 40px; margin-bottom: 20px;"></div>
+<div class="row">
+    <div class="col-sm-12">
+                <form id="formulario" class="form" style="margin-top: 3px;" action="" method="POST">                        
+                <h3>Editar taller</h3>
+                   <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label><h5>Nombre</h5></label>
+                            <input id="nombre" class="form-control"type="text" name="nombre" value="{{taller.nombre}}">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label><h5>Nombre Corto</h5></label>
+                            <input id="nombre_corto"class="form-control"type="text" name="nombre_corto" value="{{taller.nombre_corto}}">                            
+                        </div>                        
+                   </div>                   
+                   <hr>
+                   <h5>Asignar Docentes Responsables</h5>                   
+                   <div class="form-row">
+                    {% if ciclos %}
+                       <div class="form-group col-md-4">
+                            <label><h5>Cliclos lectivos</h5></label>
+                            <select  id="ciclo_lectivo" name="ciclo_lectivo" class="form-control selector_ciclo">
+                                {% for ciclo in ciclos %}
+                                    <option indice="" class="ciclos"value="{{ciclo.id}}">Semestre: {{ciclo.semestre}} - inicio: {{ciclo.fecha_ini.strftime('%d-%m-%Y')}} - fin: {{ciclo.fecha_fin.strftime('%d-%m-%Y')}} </option>
+                                {% endfor %}
+                            </select>
+                        </div>     
+                       <div class="form-group col-md-6">
+                           <label><h5>Docentes</h5></label>
+                           <table id="myTable"summary="tabla de tallers y responsables" class="table table-striped table-bordered" style="width:100%">
+                               <thead>
+                                   <th id="docente">Docente</th>
+                                   <th id="asiganar">Es Responsable Asignado</th>
+                               </thead>
+                               <tbody>
+                                {% for docente in docentes %}
+                                    <tr>
+                                    <td headers="docente">{{docente.nombre}}</td>
+                                    <td headers="asignar">
+                                        {% set docenteS = 'docente: ' + docente.id|string %}
+                                        <input id="{{docente.id}}" class="docente" type="checkbox">
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                               </tbody>
+                           </table>                           
+                       </div>
+                       {% else %}
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <p class="font-weight-bold">Este taller no cuenta con ciclos validos asignados.<br>            
+                                    Antes de asignar un docente, debe asignarle un ciclo.<br>
+                                    Es posible assignar un taller a un ciclo siempre cuando<br>
+                                    el ciclo no haya terminado.
+                                    </p>
+                                </div>
+                                <div class="col-sm-2">
+                                    <a class="btn btn-success" href="{{url_for('ciclos')}}">Asignar Ciclos</a>
+                                </div>
+                            </div>                            
+                       {% endif %}
+                       {% if ciclos %}
+                       <div class="form-group col-md-2">
+                            <input id="taller_id"type="hidden" name="taller" value="{{taller.id}}">
+                            </br></br>
+                            <button type="submit" class="btn btn-primary btn-sm mb-2 ">
+                                <span data-feather="check"></span>Guardar</button>
+                            <a class="btn btn-warning btn-sm mb-2" href="{{url_for('talleres')}}">Cancelar</a>
+                       </div>
+                       {% endif %}                      
+                   </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+
+
+</script>
+
+<script>
+    var ciclos_docentes = [];
+    //setea el atributo indice de los ciclos
+    var i = 0
+    $('.ciclos').each(function(){        
+        let a = [parseInt($(this).val())]
+        $(this).attr("indice",i) ;
+        ciclos_docentes [i] = a;
+        i = i + 1;
+    });
+
+    
+    //maneja el areglo de ciclos y los docentes responsables en cada ciclo
+    $('.docente').change(function(){        
+        var i;        
+        //recupera el id del ciclo que se encuentra seleccionado
+        $('.ciclos').each(function(){
+            if($(this).val() == $('#ciclo_lectivo').val()){
+                i = $(this).attr("indice");
+            }    
+        });
+        //si se checkeo el docente se lo agrega en caso de que no este como responsable para ese ciclo            
+        if($(this).is(':checked')){            
+            let docentes = [...ciclos_docentes]
+            docentes.splice(0,1)
+            if(docentes.includes(parseInt($(this).attr("id")))){//invertir la condicion y ahorarse el else               
+            }else{                
+                ciclos_docentes[i].push(parseInt($(this).attr("id")));
+                console.log("se incluyo el docente")    
+            }
+        }
+        //si se desmarco el docente, se lo retira en caso de que este como responsable para ese ciclo.
+        else{
+            let index = ciclos_docentes[i].indexOf(parseInt($(this).attr("id")));
+            if(index > -1){//invertir la condicion y ahorarse el else
+                ciclos_docentes[i].splice(index, 1);
+                
+            }else{
+                
+            }
+        }                
+    });
+
+    function actualizarDocentes(){                
+        var ciclo_actual = $('#ciclo_lectivo').val();//id del ciclo lectivo seleccionado                                        
+        var index//indice del ciclo lectivo seleccionado en el areglo ciclos_docentes
+        ciclos_docentes.forEach(function(item){
+            if(item[0] == ciclo_actual){
+                index = ciclos_docentes.indexOf(item)//index es number
+            }
+        });
+        //checkea los docentes que figuran como responsables para el ciclo seleccionado
+        $('.docente').each(function(){
+            let id = $(this).attr("id")                        
+            let docentes =  [...ciclos_docentes[index]]
+            docentes.splice(0,1)
+            document.getElementById(id).checked = docentes.includes(parseInt(id));
+        })
+        console.log(ciclos_docentes)        
+    }
+    
+
+    $(document).ready(function () {    
+        $('#myTable').DataTable({
+                "pageLength": {{administracion.elementos_por_pagina}},
+                "lengthChange": false,
+                "searching": false,
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay información",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                    "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                    "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ Entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "Sin resultados encontrados",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Ultimo",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
+                }
+                });                                        
+        $('.ciclos').each(function(){                    
+            let index = $(this).attr("indice");
+            let ciclo_actual = $(this).val(); 
+            var ciclos_responsables = {{ciclos_responsables|tojson}};
+            var responsables_ciclo_actual = null;            
+            ciclos_responsables = JSON.parse(ciclos_responsables);        
+            ciclos_responsables.forEach(function(item){
+                if (item[0] == ciclo_actual){
+                    responsables_ciclo_actual = item[1];
+                }
+            });
+            responsables_ciclo_actual.forEach(function(item){               
+                ciclos_docentes[index].push(item);
+            });                        
+        });
+        actualizarDocentes();                 
+    });
+    $('.selector_ciclo').change(function(){
+        actualizarDocentes()                
+    });
+
+    $('#formulario').on('submit', function(e){        
+        var docentes = []
+        $('.docente').each(function(index){
+            if($(this).is(':checked')){
+                docentes.push($(this).attr("id"))
+            }
+        });        
+        $.ajax({            
+            data:{
+                ciclos_docentes:JSON.stringify(ciclos_docentes), // se cambia a ciclos_docentes
+                taller:$('#taller_id').val(),
+                ciclo:$('#ciclo_lectivo').val(), // se usa la 1° pos de cada arreglo de ciclos_docentes
+                nombre:$('#nombre').val(),
+                nombre_corto:$('#nombre_corto').val()
+            },            
+            type:'POST',
+            url:"{{url_for('taller_edit')}}",
+            success: function (data) {
+                window.location.href = "{{ url_for('talleres') }}";
+            }            
+        });
+        e.preventDefault();
+    });  
+            
+</script>
+{% endblock %}

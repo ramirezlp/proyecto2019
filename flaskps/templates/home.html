@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-1"></div>
+      <div class="col-sm-10">
+        <h1 class="jumbotron text-center">Inicio</h1>
+        <div class="panel panel-success">
+          <div class="panel-heading text-center">Página de inicio de la aplicación</div>
+          <div class="panel-body">
+            <a href="{{ url_for('issue_index') }}" class="btn btn-primary">Consultas</a>
+            {% if is_authenticated(session) %}
+              <a href="{{ url_for('user_index') }}" class="btn btn-primary">Usuarios</a>
+              <a href="{{ url_for('auth_logout') }}" class="btn btn-danger">Cerrar sesión</a>
+            {% else %}
+              <a href="{{ url_for('auth_login') }}" class="btn btn-success">Iniciar sesión</a>
+            {% endif %}
+          </div>          
+        </div>                
+      </div>
+      <div class="col-sm-1"></div>
+    </div>
+  </div>
+
+{% endblock %}

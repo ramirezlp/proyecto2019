@@ -1,0 +1,207 @@
+{% extends "home2.html" %}
+{% block head %}
+
+{#<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+  
+    <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    #}
+<!-- MultiSelect CSS & JS library -->
+
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.multiselect.js') }}"></script>
+<link href="{{ url_for('static', filename='bower_components/jquery/dist/jquery.multiselect.css') }}" rel="stylesheet" />
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+
+
+<h2 style="text-align: center;margin-bottom:30px;">Editar Usuario - <button id="eliminar_usuario" usr_id="{{user.id}}" usr="{{user.username}}"
+                    class="btn btn-default btn-sm"><span data-feather="trash"></span> Eliminar </button></h2>
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="row">
+<div class="col-md-3">
+</div>
+<div class="col-md-6">
+<form id="myForm" action="{{url_for('user_edit')}}" method="POST">
+    <div class="form-row">
+    <div class="form-group col-md-6">
+        <label>Correo electronico</label>
+        <input required id="email" onkeyup="check_email();check_username()" type="email" name="email" value="{{user.email}}" title="Email" placeholder="Email"
+            class="form-control form-control has-warning"></input>
+    </div>
+    <div class="form-group col-md-6">
+        <label>Nombre de usuario</label>
+        <input required id="username" onkeyup="check_username();check_email()" type="text" name="username" value="{{user.username}}"
+            title="Nombre de usuario" placeholder="Nombre de usuario" class="form-control" role="textbox"></input>
+    </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Nombre</label>
+            <input required id="nombre" type="text" name="firstname" value="{{user.first_name}}" title="Nombre"
+                placeholder="Nombre" class="form-control"></input>
+
+        </div>
+        <div class="form-group col-md-6">
+            <label>Apellido</label>
+            <input required id="apellido" type="text" name="lastname" value="{{user.last_name}}" title="Apellido"
+                placeholder="Apellido" class="form-control"></input>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input required id="contraseña" type="text" name="password" value="{{user.password}}" title="Contraseña"
+            placeholder="Contraseña" class="form-control"></input>
+    </div>
+    <label>Activo/Inactivo</label>
+    <select id="estado" name="estado" value="{{user.activo}}">
+        <option value="1" {% if user.activo == 1%}selected="selected" {% endif %}>Activo</option>
+        <option value="0" {% if user.activo == 0%}selected="selected" {% endif %}>Inactivo</option>
+    </select>
+    <div class="form-group col-md-12">
+        <select name="selectorRoles" multiple="multiple" id="selectorRoles">
+            {% for rolT in roles['totales'] %}
+            {% if rolT.1 in roles['usuario'] %}
+            <option value="{{rolT.0}}" selected>{{rolT.1}}</option>
+            {% else %}
+            <option value="{{rolT.0}}">{{rolT.1}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <input  id="idA" type="hidden" name="id" value="{{id}}"></input>
+    <input style="margin-top:20px" id="botonGuardar" type="submit" value="Guardar" id="form_submit" class="btn btn-primary"></input>
+    <a style="margin-top:20px"  href="{{ url_for('user_index') }}" class="btn btn-outline-primary" role="button">Cancelar</a>
+    <div id="error1" hidden class="alert alert-warning alert-dismissible" role="alert">
+        *El nombre de usuario ya esta en uso
+    </div>
+    <div id="errorEmail" hidden class="alert alert-warning alert-dismissible" role="alert">
+        *El email ya esta en uso
+    </div>
+</form>
+</div>
+<div class="col-md-3">
+</div>
+</div>
+
+<script>
+    $("#selectorRoles").multiselect();
+</script>
+
+<script>
+    
+    $("#eliminar_usuario").click(function (e) { 
+        e.preventDefault();
+        var conf = confirm("¿Esta seguro que desea eliminar el usuario '"+$("#eliminar_usuario").attr('usr')+"'?")
+        if (conf){
+        $.ajax({
+            type: 'POST',
+            url: "{{ url_for('user_delete') }}",
+            data: JSON.stringify({
+                "id": $(this).attr('usr_id')
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                if (! response['activado']){
+                    alert('No puede eliminar el usuario del cual se encuentra logueado.')
+                }else{
+                    alert('Usuario eliminado correctamente.')
+                    window.location.href = "{{ url_for('user_index') }}";
+                }
+                
+            }
+        });
+        }
+    });
+
+    $('#myForm').on('submit', function (e) {
+        var form = {
+            email: $("#email").val(),
+            username: $("#username").val(),
+            nombre: $("#nombre").val(),
+            apellido: $("#apellido").val(),
+            contraseña: $("#contraseña").val(),
+            estado: $("#estado").val(),
+            id: $("#idA").val()
+        }
+        $.ajax({
+            type: 'POST',
+            url: "{{ url_for('user_edit') }}",
+            data: JSON.stringify({
+                "roles": $("#selectorRoles").val(),
+                "form": form
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                window.location.href = "{{ url_for('user_index') }}";
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+
+<script>
+    function check_username() {
+        $.ajax({
+            type: 'POST',
+            url: "{{ url_for('check_username') }}",
+            data: JSON.stringify({
+                "username": $("#username").val(),
+                "id": $("#idA").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                if (data.estado == "usado") {
+                    $("#botonGuardar").prop("disabled", true)
+                    $("#error1").attr("hidden", false)
+                } else {
+                    if ($("#errorEmail").is(":visible")){
+                        $("#error1").attr("hidden", true)
+                    } else {
+                        $("#botonGuardar").prop("disabled", false)
+                        $("#error1").attr("hidden", true)
+                    }
+                }
+            }
+        });
+    }
+</script>
+<script>
+    function check_email() {
+        $.ajax({
+            type: 'POST',
+            url: "{{ url_for('check_email') }}",
+            data: JSON.stringify({
+                "email": $("#email").val(),
+                "id": $("#idA").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                if (data.estado == "usado") {
+                    $("#botonGuardar").prop("disabled", true)
+                    $("#errorEmail").attr("hidden", false)
+                } else {
+                    if ($("#error1").is(":visible")){
+                        $("#errorEmail").attr("hidden", true)
+                    } else {
+                        $("#botonGuardar").prop("disabled", false)
+                        $("#errorEmail").attr("hidden", true)
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

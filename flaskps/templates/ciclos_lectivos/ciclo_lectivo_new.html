@@ -1,0 +1,60 @@
+
+{% extends "home2.html" %}
+{% block content %}
+<html lang="en">
+<head>
+<title>Registrar - Usuario</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.slim.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-sm-12">
+            <div class="container">
+            <div class="col-sm-6" style="margin: 50px auto">
+                <form action="{{ url_for('ciclo_create') }}" method="POST">
+                    <h2 class="text-center">Nuevo Ciclo Lectivo</h2>  
+                    <br>    
+                    <div class="form-row">
+                        <div class="form-group form-control">
+                        <label>Fecha de inicio</label>
+                            <div class="form-group col-md-6">
+                                <input id="fecha_ini" name="fecha_ini" type="Date" class="form-control" title="Nombre"required="required">
+                            </div>                            
+                        </div>
+                        <div class="form-group form-control">
+                            <label>Fecha de fin</label>
+                            <div class="form-group col-md-6">
+                                <input id="fecha_fin" name="fecha_fin" type="Date" class="form-control" title="Apellido" required="required">
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Semestre</label>
+                            <select name="semestre"class="form-control">
+                                <option value="1">Primero</option>
+                                <option value="2">Segundo</option>
+                            </select>
+                        </div>                        
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <button id="botonReg" type="submit" class="btn btn-primary btn-block">Crear</button>
+                        </div>
+                    </div>                                             
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

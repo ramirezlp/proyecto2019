@@ -1,0 +1,235 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-5">
+        <h3 style="margin-bottom: 30px;">Estudiantes &nbsp;
+
+            <button type="button" class="btn btn-default btn-sm estudiante-crud" data-toggle="modal" data-target="#exampleModal">
+                <span data-feather="plus"></span>
+                Estudiante Nuevo
+            </button>
+    </div>
+</div>
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="row">
+    <div class="col-md-12">
+<table id="myTable" summary="tabla de usuarios, sus datos y opciones" class="table table-striped table-bordered"
+    style="width:100%">
+    <thead>
+        <tr>
+            <th id="nombre">Nombre</th>
+            <th id="apellido">Apellido</th>
+            <th id="fecha_nacimiento">Fecha de nacimiento</th>
+            <th id="telefono">Telefono</th>
+            <th ></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for estudiante in estudiantes %}
+        <tr id="estudiante-{{estudiante.id}}">
+            <td headers="nombre">{{estudiante.nombre}}</td>
+            <td headers="apellido">{{estudiante.apellido}}</td>
+            <td headers="fecha_nacimiento">{{estudiante.fecha_nacimiento.strftime('%Y-%m-%d')}}</td>
+            <td headers="telefono">{% if estudiante.telefono == null or estudiante.telefono == '' %} No Disponible {% else %}{{estudiante.telefono}}{% endif %}</td>
+            <td headers="detalle">
+                <button class="btn btn-default btn-sm detalle-estudiante">
+                    <span data-feather="list"></span>
+                </button>
+                <button class="btn btn-default btn-sm editar-estudiante">
+                    <span data-feather="edit"></span>
+                </button>
+                <button class="btn btn-default btn-sm eliminar-estudiante">
+                    <span data-feather="trash"></span>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+{% include "modals_crud_estudiantes.html" %}
+
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+</script>
+
+<script>
+    function consultar_documento(tipo_doc,documento,boton_id,id=''){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('documento_estudiante') }}",
+            data: JSON.stringify({
+                    "id": id,
+                    "tipo_doc": tipo_doc,
+                    "documento": documento
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                    if(! response['ok']){
+                        $("#"+boton_id).attr("disabled", true);
+                        $(".mensaje-documento").text('*El documento ingresado ya existe')
+                    }else{
+                        $("#"+boton_id).attr("disabled", false);
+                        $(".mensaje-documento").text('')
+                    }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $(".estudiante-crud").click(function (e) { 
+            e.preventDefault();
+            $(".mensaje-documento").text('')
+            $("#crear_estudiante_conf").attr('disabled',false)
+        });
+
+        $('.documento').on('keyup change', function (e) {
+            consultar_documento(
+                $('select[name="tipo_doc"]').val(),
+                $('input[name="documento"]').val(),
+                "crear_estudiante_conf"
+            )
+        });
+        $('.documento_mod').on('keyup change', function (e) {
+            consultar_documento(
+                $('select[name="tipo_doc_mod"]').val(),
+                $('input[name="documento_mod"]').val(),
+                "modificar_estudiante_conf",
+                $('input[name="id_mod"]').val(),
+            )
+        });
+        $('#myTable').DataTable({
+            "pageLength": {{administracion.elementos_por_pagina}},
+            "lengthChange": false,
+            language: {
+                "decimal": "",
+                "emptyTable": "No hay información",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ Entradas",
+                "loadingRecords": "Cargando...",
+                "processing": "Procesando...",
+                "search": "Buscar:",
+                "zeroRecords": "Sin resultados encontrados",
+                "paginate": {
+                    "first": "Primero",
+                    "last": "Ultimo",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                }
+            }
+        });
+    $(document).on('click',".detalle-estudiante",function (e) {
+        e.preventDefault();
+        $("#body_estudiante").text('')
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('detalle_estudiante') }}",
+            data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                var html=''
+                html += "<p class='text text-dark'>Nombre: "+response['estudiante']['nombre']+"</p>";
+                html += "<p class='text text-dark'>Apellido: "+response['estudiante']['apellido']+"</p>";
+                html += "<p class='text text-dark'>"+response['tipo_doc']['nombre']+": "+response['estudiante']['documento']+"</p>";
+                html += "<p class='text text-dark'>Barrio: "+response['estudiante']['barrio']+"</p>";
+                html += "<p class='text text-dark'>Lugar de nacimiento: "+response['estudiante']['lugar_de_nacimiento']+"</p>";
+                html += "<p class='text text-dark'>Domicilio: "+response['estudiante']['domicilio']+"</p>";
+                html += "<p class='text text-dark'>Escuela: "+response['estudiante']['escuela']+"</p>";
+                html += "<p class='text text-dark'>Fecha de nacimiento: "+response['fecha']+"</p>";
+                html += "<p class='text text-dark'>Localidad: "+response['localidad']['nombre']+"</p>";
+                html += "<p class='text text-dark'>Telefono: "+response['estudiante']['telefono']+"</p>";
+                html += "<p class='text text-dark'>Nivel: "+response['estudiante']['nivel']+"</p>";
+                html += "<p class='text text-dark'>Numero de Contacto: "+response['estudiante']['numero_contacto']+"</p>";
+                html += "<p class='text text-dark'>Email de Contacto: "+response['estudiante']['email_contacto']+"</p>";
+                $("#body_estudiante").append(html);
+                $("#detalle_estudiante").modal('show')
+            }
+        });
+    })
+
+    $(document).on('click',".editar-estudiante",function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{{ url_for('detalle_estudiante') }}",
+                data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $('select[name="tipo_doc_mod"]').val(response['estudiante']['tipo_doc_id']).change();
+                    $('select[name="escuela_mod"]').val(response['estudiante']['escuela_id']).change();
+                    $('input[name="documento_mod"]').val(response['estudiante']['documento']);
+                    $('input[name="id_mod"]').val(response['estudiante']['id']);
+                    $('input[name="nombre_mod"]').val(response['estudiante']['nombre']);
+                    $('input[name="apellido_mod"]').val(response['estudiante']['apellido']);
+                    $('input[name="telefono_mod"]').val(response['estudiante']['telefono']);
+                    $('select[name="localidad_mod"]').val(response['estudiante']['localidad_id']).change();
+                    $('select[name="barrio_mod"]').val(response['estudiante']['barrio_id']).change();
+                    $('select[name="genero_mod"]').val(response['estudiante']['genero_id']).change();
+                    $('select[name="nivel_mod"]').val(response['estudiante']['nivel_id']).change();
+                    $('select[name="responsable_mod"]').val(response['estudiante']['responsable']).change();
+                    $('input[name="lugar_nacimiento_mod"]').val(response['estudiante']['lugar_de_nacimiento']);
+                    $('input[name="fecha_nacimiento_mod"]').val(response['fecha']);
+                    $('input[name="domicilio_mod"]').val(response['estudiante']['domicilio']);
+                    $('input[name="numero_cont_mod"]').val(response['estudiante']['numero_contacto']);
+                    $('input[name="email_cont_mod"]').val(response['estudiante']['email_contacto']);
+                    $("#modificar_estudiante_modal").modal('show');
+                    $("#modificar_estudiante_conf").attr("disabled", false);
+                    $(".mensaje-documento").text('');
+
+            }
+        });
+    });
+
+    $(document).on('click',".eliminar-estudiante",function(e){
+        e.preventDefault();
+        console.log('hola')
+        var tr= $(this).parent().parent()
+        var conf = confirm("¿Seguro que desea eliminar el estudiante '"+$($(tr).children()[0]).text()+" "+$($(tr).children()[1]).text()+"'?")
+        if (conf){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('eliminar_estudiante') }}",
+            data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                if(response.deleted)
+                {
+                    alert('Estudiante eliminado correctamente')
+                }
+                location.reload();
+            }
+        });
+    }
+    });
+});
+</script>
+{% endblock %}

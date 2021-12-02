@@ -1,0 +1,466 @@
+{% extends "home2.html" %}
+{% block head %}
+<link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+
+
+{{ super() }}
+{% endblock %}
+{% block content %}
+<style>
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
+<div class="row">
+    <div class="col-sm-5">
+        <h3 style="margin-bottom: 30px;">Docentes &nbsp;
+
+            <button type="button" class="btn btn-default btn-sm docente-crud" data-toggle="modal" data-target="#exampleModal">
+                <span data-feather="plus"></span>
+                Docente Nuevo
+            </button>
+    </div>
+</div>
+{% if msg %}
+<li>{{ msg }}</li>
+{% endif %}
+<div class="row">
+    <div class="col-md-12">
+<table id="myTable" summary="tabla de usuarios, sus datos y opciones" class="table table-striped table-bordered"
+    style="width:100%">
+    <thead>
+        <tr>
+            <th id="nombre">Nombre</th>
+            <th id="apellido">Apellido</th>
+            <th id="fecha_nacimiento">Fecha de nacimiento</th>
+            <th id="telefono">Telefono</th>
+            <th ></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for docente in docentes %}
+        <tr id="{{docente.id}}">
+            <td headers="nombre">{{docente.nombre}}</td>
+            <td headers="apellido">{{docente.apellido}}</td>
+            <td headers="fecha_nacimiento">{{docente.fecha_nac.strftime('%Y-%m-%d')}}</td>
+            <td headers="telefono">{% if docente.tel == null or docente.tel == '' %} No Disponible {% else %}{{docente.tel}}{% endif %}</td>
+            <td headers="detalle">
+                <button class="btn btn-default btn-sm detalle-docente">
+                    <span data-feather="list"></span>
+                </button>
+                <button class="btn btn-default btn-sm editar-docente">
+                    <span data-feather="edit"></span>
+                </button>
+                <button class="btn btn-default btn-sm eliminar-docente">
+                    <span data-feather="trash"></span>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+<!--Modal modificar docente-->
+<!-- Modal -->
+<div class="modal fade" id="modificar_docente_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modificar Docente</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('modificar_docente') }}" method="POST" id="modificar_docente">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputEmail4">Nombre</label>
+                            <input hidden type="number" name="id_mod">
+                            <input required type="text" class="form-control" name="nombre_mod" placeholder="Nombre">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputPassword4">Apellido</label>
+                            <input required type="text" class="form-control" name="apellido_mod" placeholder="Apellido">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Fecha de nacimiento</label>
+                            <input required type="date" max="2019-01-01" name="fecha_nacimiento_mod" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Localidad</label>
+                            <select required id="inputState" class="form-control" name="localidad_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for localidad in localidades%}
+                                <option value="{{localidad.id}}">{{localidad.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Domicilio</label>
+                            <input required type="text" class="form-control" placeholder="Domicilio" name="domicilio_mod">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Genero</label>
+                            <select required id="inputState" class="form-control" name="genero_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for genero in generos %}
+                                <option value="{{genero.id}}">{{genero.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Telefono (opcional)</label>
+                            <input type="number" max="999999999999999" min='9999999' name="telefono_mod" class="form-control" placeholder="Telefono">
+                            <small id="passwordHelpInline" class="text-muted">
+                                Debe ser un numero positivo
+                            </small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Tipo de documento</label>
+                            <select required id="inputState" class="form-control documento_mod" name="tipo_doc_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_doc in tipos_doc %}
+                                <option value="{{tipo_doc.id}}">{{tipo_doc.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Documento</label>
+                            <input required type="positiveNumber" max="99999999" min='1000000' id="documento_mod" name="documento_mod" class="form-control documento_mod" placeholder="Documento">
+                            <small id="passwordHelpInline" class="text-muted">
+                                Debe ser un numero positivo
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            <div class="modal-footer">
+            <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#modificar_docente').trigger('reset');$('.mensaje-documento').text('');" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="modificar_docente_conf" class="btn btn-primary">Modificar</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!--Modal crear docente-->
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">docente nuevo</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('docentes') }}" method="POST" id="docente_nuevo">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputEmail4">Nombre</label>
+                            <input required type="text" class="form-control" name="nombre" placeholder="Nombre">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputPassword4">Apellido</label>
+                            <input required type="text" class="form-control" name="apellido" placeholder="Apellido">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Fecha de nacimiento</label>
+                            <input required type="date" max="2019-01-01" name="fecha_nacimiento" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Localidad</label>
+                            <select required id="inputState" class="form-control" name="localidad">
+                                <option selected value="">Elegir...</option>
+                                {% for localidad in localidades%}
+                                <option value="{{localidad.id}}">{{localidad.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Domicilio</label>
+                            <input required type="text" class="form-control" placeholder="Domicilio" name="domicilio">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Genero</label>
+                            <select required id="inputState" class="form-control" name="genero">
+                                <option selected value="">Elegir...</option>
+                                {% for genero in generos %}
+                                <option value="{{genero.id}}">{{genero.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Telefono (opcional)</label>
+                            <input type="number" max="999999999999999" min='9999999' name="telefono" class="form-control" placeholder="Telefono">
+                            <small id="passwordHelpInline" class="text-muted">
+                                Debe ser un numero positivo
+                            </small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Tipo de documento</label>
+                            <select required id="inputState" class="form-control documento" name="tipo_doc">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_doc in tipos_doc %}
+                                <option value="{{tipo_doc.id}}">{{tipo_doc.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Documento</label>
+                            <input required type="positiveNumber" max="99999999" min='1000000' name="documento" id="documento" class="form-control documento" placeholder="Documento">
+                            <small id="passwordHelpInline" class="text-muted">
+                                Debe ser un numero positivo
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            <div class="modal-footer">
+                <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#docente_nuevo').trigger('reset');$('.mensaje-documento').text('');$(this).attr('disabled',false)" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="crear_docente_conf" class="btn btn-primary">Crear</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="detalle_docente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Detalle del estudiante</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="body_docente" class="modal-body">  
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block jsmas%}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+</script>
+
+<script>
+
+    function consultar_documento(tipo_doc,documento,boton_id,id=''){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('documento_docente') }}",
+            data: JSON.stringify({
+                    "id": id,
+                    "tipo_doc": tipo_doc,
+                    "documento": documento
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                    if(! response['ok']){
+                        $("#"+boton_id).attr("disabled", true);
+                        $(".mensaje-documento").text('*El documento ingresado ya existe')
+                    }else{
+                        $("#"+boton_id).attr("disabled", false);
+                        $(".mensaje-documento").text('')
+                    }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $(".docente-crud").click(function (e) { 
+            e.preventDefault();
+            $(".mensaje-documento").text('')
+            $("#crear_docente_conf").attr('disabled',false)
+        });
+
+        $('.documento').on('keyup change', function (e) {
+            consultar_documento(
+                $('select[name="tipo_doc"]').val(),
+                $('input[name="documento"]').val(),
+                "crear_docente_conf"
+            )
+        });
+        $('.documento_mod').on('keyup change', function (e) {
+            consultar_documento(
+                $('select[name="tipo_doc_mod"]').val(),
+                $('input[name="documento_mod"]').val(),
+                "modificar_docente_conf",
+                $('input[name="id_mod"]').val(),
+            )
+        });
+    });
+
+    $(document).ready(function () {
+        $('#myTable').DataTable({
+            "pageLength": {{administracion.elementos_por_pagina}},
+            "lengthChange": false,
+            language: {
+                "decimal": "",
+                "emptyTable": "No hay información",
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ Entradas",
+                "loadingRecords": "Cargando...",
+                "processing": "Procesando...",
+                "search": "Buscar:",
+                "zeroRecords": "Sin resultados encontrados",
+                "paginate": {
+                    "first": "Primero",
+                    "last": "Ultimo",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                }
+            }
+        });
+    });
+
+
+    $(".cambiar-estado-usuario").click(function (e) {
+        e.preventDefault();
+        var user = $($(this).parent().parent().children()[1]).text();
+        var estado = ($(this).attr('state') == '1') ? 'desactivar' : 'activar'
+        var conf = confirm("¿Seguro que desea " + estado + " el usuario '" + user + "'?");
+        if (conf) {
+            var element = $(this)
+            $.ajax({
+                type: 'POST',
+                url: "{{ url_for('user_state_toggle') }}",
+                data: JSON.stringify({
+                    "id": $(this).attr('usr_id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data['activado']) {
+                        if (element.attr('state') == '1') {
+                            element.text('')
+                            element.append(
+                                "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-check'><polyline points='20 6 9 17 4 12'></polyline></svg>"
+                            );
+                            element.append(' Activar')
+                            element.attr('state', '0')
+                        } else {
+                            element.text('')
+                            element.append(
+                                "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-check'><polyline points='20 6 9 17 4 12'></polyline></svg>"
+                            )
+                            element.append(' Desactivar')
+                            element.attr('state', '1')
+                        }
+                    } else {
+                        alert('No puede desactivar el usuario del cual se encuentra logueado.')
+                    }
+
+                }
+            });
+        }
+    });
+
+    $(".detalle-docente").click(function(e){
+        e.preventDefault();
+        $("#body_docente").text('')
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('detalle_docente') }}",
+            data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {
+                var html=''
+                html += "<p class='text text-dark'>Nombre: "+response['docente']['nombre']+"</p>";
+                html += "<p class='text text-dark'>Apellido: "+response['docente']['apellido']+"</p>";
+                html += "<p class='text text-dark'>"+response['tipo_doc']['nombre']+": "+response['docente']['documento']+"</p>";
+                html += "<p class='text text-dark'>Domicilio: "+response['docente']['domicilio']+"</p>";
+                html += "<p class='text text-dark'>Fecha de nacimiento: "+response['fecha']+"</p>";
+                html += "<p class='text text-dark'>Localidad: "+response['localidad']['nombre']+"</p>";
+                html += "<p class='text text-dark'>Telefono: "+response['docente']['telefono']+"</p>";
+                $("#body_docente").append(html);
+                $("#detalle_docente").modal('show')
+            }
+        });
+    })
+
+    $(".editar-docente").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{{ url_for('detalle_docente') }}",
+                data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $('input[name="id_mod"]').val(response['docente']['id']);
+                    $('input[name="nombre_mod"]').val(response['docente']['nombre']);
+                    $('input[name="apellido_mod"]').val(response['docente']['apellido']);
+                    $('input[name="telefono_mod"]').val(response['docente']['telefono']);
+                    $('select[name="tipo_doc_mod"]').val(response['docente']['tipo_doc_id']).change();
+                    $('select[name="localidad_mod"]').val(response['docente']['localidad_id']).change();
+                    $('select[name="genero_mod"]').val(response['docente']['genero_id']).change();
+                    $('input[name="documento_mod"]').val(response['docente']['documento']);
+                    $('input[name="fecha_nacimiento_mod"]').val(response['fecha']);
+                    $('input[name="domicilio_mod"]').val(response['docente']['domicilio']);
+                    $("#modificar_docente_modal").modal('show');
+                     $("#modificar_estudiante_conf").attr("disabled", false);
+                    $(".mensaje-documento").text('');
+            }
+        });
+    })
+
+    $(".eliminar-docente").click(function(e){
+        e.preventDefault();
+        var tr= $(this).parent().parent()
+        var conf = confirm("¿Seguro que desea eliminar el docente '"+$($(tr).children()[0]).text()+" "+$($(tr).children()[1]).text()+"'?")
+        if (conf){
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('eliminar_docente') }}",
+            data: JSON.stringify({
+                    "id": $(this).parent().parent().attr('id')
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (response) {                
+                if(response.deleted){
+                    alert('Docente eliminado correctamente')                 
+                }
+                location.reload();                    
+            }
+        });
+        }
+    })
+</script>
+{% endblock %}

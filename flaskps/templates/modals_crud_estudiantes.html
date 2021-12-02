@@ -1,0 +1,297 @@
+<!--Modal modificar estudiante-->
+<!-- Modal -->
+
+<style>
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
+
+<div class="modal fade" id="modificar_estudiante_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modificar estudiante</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('modificar_estudiante') }}" method="POST" id="modificar_estudiante">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputEmail4">Nombre</label>
+                            <input hidden type="number" name="id_mod">
+                            <input required type="text" class="form-control" name="nombre_mod" placeholder="Nombre">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputPassword4">Apellido</label>
+                            <input required type="text" class="form-control" name="apellido_mod" placeholder="Apellido">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Fecha de nacimiento</label>
+                            <input required type="date" max="2019-01-01" name="fecha_nacimiento_mod" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Lugar de nacimiento</label>
+                            <input type="text" class="form-control" name="lugar_nacimiento_mod" placeholder="Lugar de nacimiento">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Localidad</label>
+                            <select required id="inputState" class="form-control" name="localidad_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for localidad in localidades%}
+                                <option value="{{localidad.id}}">{{localidad.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Genero</label>
+                            <select required id="inputState" class="form-control" name="genero_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for genero in generos %}
+                                <option value="{{genero.id}}">{{genero.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group col-md-6">
+                            <label for="inputtext4">Domicilio</label>
+                            <input required type="text" class="form-control" placeholder="Domicilio" name="domicilio_mod">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Barrio</label>
+                            <select required id="inputState" class="form-control" name="barrio_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for barrio in barrios %}
+                                <option value="{{barrio.id}}">{{barrio.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Tipo de documento</label>
+                            <select required id="inputState" class="form-control documento_mod" name="tipo_doc_mod">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_doc in tipos_doc %}
+                                <option value="{{tipo_doc.id}}">{{tipo_doc.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                         <div class="form-group col-md-4">
+                            <label for="inputtext4">Documento</label>
+                            <input required type="number" max="99999999" min='1000000' id="documento_mod" name="documento_mod" class="form-control documento_mod" placeholder="Documento">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Telefono</label>
+                            <input type="number" max="999999999999999" min='9999999' name="telefono_mod" class="form-control" placeholder="Telefono">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Escuela</label>
+                            <select required id="inputState" name="escuela_mod" class="form-control">
+                                <option selected value="">Elegir...</option>
+                                {% for escuela in escuelas %}
+                                <option value="{{escuela.id}}">{{escuela.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Nivel</label>
+                            <select required id="inputState" name="nivel_mod" class="form-control">
+                                <option selected value="">Elegir...</option>
+                                {% for nivel in niveles %}
+                                <option value="{{nivel.id}}">{{nivel.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Responsable</label>
+                            <select required id="inputState" name="responsable_mod" class="form-control">
+                                <option value="Madre">Madre</option>
+                                <option value="Padre">Padre</option>
+                                <option value="Madre-Padre">Madre-Padre</option>
+                                <option value="Tutor">Tutor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Telefono de Contacto</label>
+                            <input required type="number" max="999999999999999" min='999999' name="numero_cont_mod" class="form-control" placeholder="Telefono de contacto">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Email de Contacto</label>
+                            <input required type='email' name="email_cont_mod" class="form-control" placeholder="Email de contacto">
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#estudiante_nuevo').trigger('reset');$('.mensaje-documento').text('');" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="modificar_estudiante_conf"  class="btn btn-primary">Modificar</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Modal crear estudiante-->
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Estudiante nuevo</h5>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('crear_estudiante') }}" method="POST" id="estudiante_nuevo">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputEmail4">Nombre</label>
+                            <input required type="text" class="form-control" name="nombre" placeholder="Nombre">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputPassword4">Apellido</label>
+                            <input required type="text" class="form-control" name="apellido" placeholder="Apellido">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Fecha de nacimiento</label>
+                            <input required type="date" max="2019-01-01" name="fecha_nacimiento" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Lugar de nacimiento</label>
+                            <input type="text" class="form-control" name="lugar_nacimiento" placeholder="Lugar de nacimiento">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Localidad</label>
+                            <select required id="inputState" class="form-control" name="localidad">
+                                <option selected value="">Elegir...</option>
+                                {% for localidad in localidades%}
+                                <option value="{{localidad.id}}">{{localidad.nombre}}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Genero</label>
+                            <select required id="inputState" class="form-control" name="genero">
+                                <option selected value="">Elegir...</option>
+                                {% for genero in generos %}
+                                <option value="{{genero.id}}">{{genero.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group col-md-6">
+                            <label for="inputtext4">Domicilio</label>
+                            <input required type="text" class="form-control" placeholder="Domicilio" name="domicilio">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Barrio</label>
+                            <select required id="inputState" class="form-control" name="barrio">
+                                <option selected value="">Elegir...</option>
+                                {% for barrio in barrios %}
+                                <option value="{{barrio.id}}">{{barrio.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Tipo de documento</label>
+                            <select required id="inputState" class="form-control documento" name="tipo_doc">
+                                <option selected value="">Elegir...</option>
+                                {% for tipo_doc in tipos_doc %}
+                                <option value="{{tipo_doc.id}}">{{tipo_doc.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                         <div class="form-group col-md-4">
+                            <label for="inputtext4">Documento</label>
+                            <input required id="documento" type="number" max="99999999" min='1000000' name="documento" class="form-control documento" placeholder="Documento">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Telefono</label>
+                            <input type="number" max="999999999999999" min='9999999' name="telefono" class="form-control" placeholder="Telefono">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Escuela</label>
+                            <select required id="inputState" name="escuela" class="form-control">
+                                <option selected value="">Elegir...</option>
+                                {% for escuela in escuelas %}
+                                <option value="{{escuela.id}}">{{escuela.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Nivel</label>
+                            <select required id="inputState" name="nivel" class="form-control">
+                                <option selected value="">Elegir...</option>
+                                {% for nivel in niveles %}
+                                <option value="{{nivel.id}}">{{nivel.nombre}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="inputtext4">Responsable</label>
+                            <select required id="inputState" name="responsable" class="form-control">
+                                <option value="Madre">Madre</option>
+                                <option value="Padre">Padre</option>
+                                <option value="Madre-Padre">Madre-Padre</option>
+                                <option value="Tutor">Tutor</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Telefono de Contacto</label>
+                            <input required type="number" max="999999999999999" min='999999' name="numero_contacto" class="form-control" placeholder="Telefono de contacto">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="inputtext4">Email de Contacto</label>
+                            <input required type='email' name="email_contacto" class="form-control" placeholder="Email de contacto">
+                        </div>
+                    </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <span class="test text-left text-danger mensaje-documento"></span>
+                <button type="cancel" onclick="$('#estudiante_nuevo').trigger('reset');$('.mensaje-documento').text('');$(this).attr('disabled',false)" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id="crear_estudiante_conf" class="btn btn-primary">Crear</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Modal - Detalle de un estudiante -->
+<div class="modal fade" id="detalle_estudiante" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Detalle del estudiante</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="body_estudiante" class="modal-body">
+          
+        </div>
+      </div>
+    </div>
+  </div>

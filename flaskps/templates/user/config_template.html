@@ -1,0 +1,151 @@
+{% extends "home2.html" %}
+{% block head %}
+
+{#<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+  
+    <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    #}
+<!-- MultiSelect CSS & JS library -->
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-12">Informacion de la Orquesta Escuela</h1>
+        </div>
+        <div class="col-md-6">
+            <form style="margin-top: 10%;" action="{{ url_for('configuracion') }}" id="modificar_configuracion" method="POST">
+                <div class="form-group col-sm-12">
+                    <label for="exampleInputEmail1">Titulo</label>
+                    <input required readonly type="text" id="titulo" class="form-control" value="{{administracion.titulo}}"
+                        name="titulo" title="Titulo" placeholder="titulo"></input>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="exampleInputEmail1">Descripcion</label>
+                    <input required readonly type="text" id="descripcion" class="form-control"
+                        value="{{administracion.descripcion}}" title="Descripción" name="descripcion" 
+                        placeholder="descripcion"></input>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="exampleInputEmail1">Email de Contacto</label>
+                    <input required readonly type="email" id="email" class="form-control" value="{{administracion.mail_contacto}}"
+                        name="mail_contacto" placeholder="Email de Contacto"></input>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="exampleInputEmail1">Cantidad De Elementos Por Pagina</label>
+                    <input required readonly type="number" id="elementos" class="form-control"
+                        value="{{administracion.elementos_por_pagina}}" name="elementos_por_pagina"
+                        placeholder="Cantidad De Elementos Por Pagina"></input>
+                </div>
+                <div class="form-group col-sm-12">
+                    <button id="guardar_formulario" style="display:none;" type="submit"
+                        class="btn btn-primary">Guardar</button>
+                    <input style="display:none;" id="cancelar_formulario" class="btn btn-primary" class="button"
+                        type="button" onclick="window.location.reload()" value="Cancel" onkeypress="window.location.reload()" role="button"></input>
+                </div>
+            </form>
+            <div class="form-row">
+                <div class="form-group col-sm-6">
+                    <button id="habilitar_edicion" class="btn btn-primary">Editar</button>
+                    {% if is_authenticated(session) and is_admin(session) %}
+                        <span class="btn btn-success administrar_horarios_button">Asignacion de Horarios</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6" style="margin-top: 5%">
+            <div style="text-align: center;">
+                {% if administracion.sitio_activo %}
+                <p><strong> Sitio activo </strong></p>
+                <button class="btn btn-default" id="desactivar_sitio"> Desactivar </button>
+                {% else %}
+                <p><strong> Sitio inactivo </strong></p>
+                <button class="btn btn-default" id="activar_sitio"> Activar </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var multisel =  $('#select_dias').multiselect({
+                        placeholder: 'Ningun dia seleccionado'
+                    });
+
+</script>
+{% endblock %}
+{% block jsmas %}
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $("#habilitar_edicion").click(function (e) {
+            e.preventDefault();
+            $("#cancelar_formulario").show()
+            $("#guardar_formulario").show()
+            $(this).hide()
+            $("#titulo").attr('readonly', false)
+            $("#descripcion").attr('readonly', false)
+            $("#email").attr('readonly', false)
+            $("#elementos").attr('readonly', false)
+        });
+
+        $("#activar_sitio").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{{ url_for('activo_desactivo_sitio') }}",
+                data: JSON.stringify({
+                    "activar": 0
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    location.reload()
+                }
+            });
+        });
+        $("#desactivar_sitio").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{{ url_for('activo_desactivo_sitio') }}",
+                data: JSON.stringify({
+                    "activar": 1
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    location.reload()
+                }
+            });
+
+        });
+
+
+        $("modificar_configuracion").submit(function (e) {
+
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+            alert('hola');
+
+            /*
+            var form = $(this);
+            var url = form.attr('action');
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(), // serializes the form's elements.
+                success: function (data) {
+                    alert(data); // show response from the php script.
+                }
+            });*/
+
+        });
+    });
+
+
+</script>
+{% endblock %}

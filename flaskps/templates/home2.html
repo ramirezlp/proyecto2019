@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  {% block head %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+  <title>{{administracion.titulo}}</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/dashboard/">
+
+  <!-- Bootstrap core CSS -->
+  <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+
+  <link href="{{ url_for('static', filename='navbar.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
+  {% endblock %}
+</head>
+
+<body>
+  {% block navbar %}
+
+
+  <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+    <span id="open_nav" class="text text-light" role="button" style="margin: 7px;font-size: 20px;cursor:pointer;"
+      onclick="openNav()" onkeypress="openNav()">&#9776; Orquesta Escuela de Berisso</span>
+    <ul style="margin:4px;" class="list-inline">
+      <li class="text-nowrap list-inline-item">
+        {% if is_authenticated(session) %}
+        <a class="nav-link text-light"   href="{{ url_for('auth_logout') }}">Cerrar Sesion</a>
+        {% else %}
+        <a class="nav-link text-light"   href="{{ url_for('auth_login') }}">Iniciar Sesion</a>
+        {% endif %}
+      </li>
+      <li class="text-nowrap list-inline-item">
+        {% if is_authenticated(session) %}
+        <a class="nav-link  text-light" >{{session["user"]}}</a>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+  {% endblock %}
+  <div class="container-fluid">
+    <div class="row min-vh-100">
+      <nav class="">
+        <div id="mySidenav" style="margin-top:20px;" class="sidenav bg-dark">
+          <ul class="nav flex-column">
+            {#<li class="nav-item " style="margin-top: 20px;">
+              <a class="nav-link active text-light" href="{{ url_for('issue_index') }}">
+                <span class="text-light" data-feather="link"></span>
+                Consultas <span class="sr-only text-light">(current)</span>
+              </a>
+            </li> #}
+            <li class="nav-item">
+              <a class="text-light nav-link" href="{{ url_for('home') }}">
+                <span data-feather="home"></span>
+                Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="text-light nav-link" href="/mapaPublico">
+                <span data-feather="map"></span>
+                Ver nucleos
+              </a>
+            </li>            
+            {% if is_authenticated(session) and is_admin(session) %}
+            <li class="nav-item">
+              <a class="text-light nav-link " href="{{ url_for('user_index') }}">
+                <span data-feather="user"></span>
+                Usuarios
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="text-light nav-link" href="/configuracion">
+                <span data-feather="settings"></span>
+                Configuración
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="text-light nav-link" href="/mapa">
+                <span data-feather="map"></span>
+                Edición de mapa
+              </a>
+            </li>            
+            {% endif %}
+            {% if is_authenticated(session) and (is_admin(session) or es_preceptor(session) or es_docente(session)) %}
+            <li class="nav-item">
+              <a class="text-light nav-link" href="/estudiantes">
+                <span data-feather="book"></span>
+                Estudiantes
+              </a>
+            </li>
+            {% endif %}
+            {% if is_authenticated(session) and (is_admin(session) or es_docente(session))%}
+            <li class="nav-item">
+              <a class="text-light nav-link" href="{{url_for('docentes')}}">
+                <span data-feather="book"></span>
+                Docentes
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="text-light nav-link" href="/ciclos">
+                <span data-feather="clipboard"></span>
+                Ciclos Lectivos
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="text-light nav-link" href="{{url_for('talleres')}}">
+                <span data-feather="grid"></span>
+                Talleres
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="text-light nav-link" href="{{url_for('instrumentos')}}">
+                <span data-feather="music"></span>
+                Instrumentos
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
+      <main role="main" class="col bg-faded py-3">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+            {{ message }}
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+
+        {% endwith %}
+        {% block content %}
+        <body>
+        <h1 style="text-align:center;">{{administracion.titulo}}</h1>
+        <h2 style="text-align:center;">{{administracion.descripcion}}</h2>
+        </body>
+        {% endblock %}
+      </main>
+    </div>
+
+  </div>
+
+<style>
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  text-align: center;
+}
+</style>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<footer class="footer bg-dark" style="margin-top:40px;">
+      <div class="container" style="margin: 10px; text-align: left">
+        <span class="text-light" >Mail de contacto: {{administracion.mail_contacto}}</span>
+      </div>
+</footer>
+  {% block js %}
+  <!-- Bootstrap core JavaScript
+    ================================================== -->
+
+  <script src="{{ url_for('static',filename='bower_components/jquery/dist/jquery.min.js')}}"></script>
+  <script>
+    window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')
+  </script>
+  <script src="{{ url_for('static', filename='popper.js') }}"></script>
+  <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+  <!-- Icons -->
+  <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+  <script>
+    feather.replace()
+  </script>
+  <script>
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "200px";
+      $("#open_nav").attr('onclick', 'closeNav()')
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+      $("#open_nav").attr('onclick', 'openNav()')
+    }
+  </script>
+  {% endblock %}
+  {% block jsmas %}
+
+  {% endblock %}
+</body>
+
+
+</html>
